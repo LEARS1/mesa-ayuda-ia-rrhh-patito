@@ -448,6 +448,97 @@ def formatear_solicitudes_registradas(
 
 
 # ============================================================
+# CONSULTA DEL HISTORIAL DE SOLICITUDES
+# ============================================================
+
+def es_consulta_de_solicitudes_registradas(
+    pregunta: str
+) -> bool:
+    """Detecta preguntas sobre solicitudes ya guardadas o registradas.
+
+    Esta intención es independiente de un borrador pendiente. Por ejemplo,
+    el usuario puede preguntar "¿qué solicitudes tengo registradas?" sin
+    que el sistema intente completar el borrador actual.
+    """
+
+    texto = normalizar_texto(pregunta)
+
+    patrones = [
+        r"\b(?:que|qué|cual|cuál) solicitud(?:es)? (?:tengo|hay|esta|está|estan|están|guarde|guardé)\b",
+        r"\bsolicitud(?:es)? (?:registrada|registradas|guardada|guardadas|confirmada|confirmadas)\b",
+        r"\b(?:mostrar|muestrame|muéstrame|ver|listar|consultar) (?:mis |las )?solicitudes\b",
+        r"\b(?:historial|registro) de solicitudes\b",
+        r"\bque tengo registrado\b",
+        r"\bqué tengo registrado\b",
+        r"\bque esta guardado\b",
+        r"\bqué está guardado\b",
+        r"\bsolicitud.*(?:guardada|registrada|hasta el momento)\b",
+        r"\bdeseo saber que solicitud\b",
+        r"\bdeseo saber qué solicitud\b",
+    ]
+
+    return any(re.search(patron, texto) for patron in patrones)
+
+
+def consultar_historial_solicitudes(
+    thread_id: str
+) -> dict:
+    """Devuelve historial confirmado y estado del borrador sin modificarlo."""
+
+    solicitudes = obtener_solicitudes_registradas()
+    pendiente = solicitudes_pendientes.get(thread_id)
+
+    partes = []
+
+    if solicitudes:
+        partes.append(formatear_solicitudes_registradas(solicitudes).strip())
+    else:
+        partes.append("No existen solicitudes registradas actualmente.")
+
+    if isinstance(pendiente, dict):
+        tipo = str(pendiente.get("tipo", "solicitud")).strip().upper()
+        faltantes = _campos_faltantes_estado(pendiente)
+
+        if faltantes:
+            etiquetas = {
+                "nombre": "Colaborador",
+                "fecha_inicio": "Fecha de inicio",
+                "fecha_fin": "Fecha de fin",
+                "dias": "Días hábiles",
+                "jefe_aprobador": "Jefe aprobador",
+                "dependiente": "Nombre del dependiente",
+                "vinculo": "Vínculo",
+                "documentos_respaldo": "Documentos de respaldo",
+            }
+            faltantes_texto = ", ".join(
+                etiquetas.get(campo, campo)
+                for campo in faltantes
+            )
+            partes.append(
+                "Además, existe un borrador pendiente de "
+                f"{tipo}. Todavía falta completar: {faltantes_texto}."
+            )
+        else:
+            partes.append(
+                "Además, existe un borrador pendiente de "
+                f"{tipo} listo para confirmación."
+            )
+
+    return {
+        "respuesta": "\n\n".join(partes),
+        "agentes": ["Agente de Acción"],
+        "herramientas": ["Consulta de historial de solicitudes"],
+        "fuentes": [
+            {
+                "documento": "registro_solicitudes_rrhh.txt",
+                "tipo": "registro_persistente",
+            }
+        ] if solicitudes else [],
+        "encontro_informacion": bool(solicitudes or pendiente),
+    }
+
+
+# ============================================================
 # GENERACIÓN DE ID
 # ============================================================
 
@@ -2405,6 +2496,11 @@ def mensaje_relacionado_con_solicitud_pendiente(
 
     texto = normalizar_texto(pregunta)
     if not texto:
+        return False
+
+    # Consultar el historial es una intención administrativa independiente.
+    # Nunca debe utilizarse para completar el borrador pendiente.
+    if es_consulta_de_solicitudes_registradas(pregunta):
         return False
 
     if es_confirmacion(texto) or es_cancelacion(texto):

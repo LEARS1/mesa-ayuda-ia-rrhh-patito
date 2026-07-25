@@ -1,95 +1,264 @@
 # Mesa de Ayuda IA para RR. HH. — Patito S.A.
 
-Prototipo funcional del proyecto final del Semillero de Inteligencia Artificial. Permite realizar consultas de Recursos Humanos en lenguaje natural, recuperar información desde tres bases documentales independientes, analizar imágenes y registrar solicitudes de vacaciones o dependientes.
+Prototipo funcional desarrollado para el proyecto final del **Semillero de Inteligencia Artificial**. La aplicación permite realizar consultas de Recursos Humanos en lenguaje natural, recuperar información desde tres bases documentales independientes, analizar imágenes y registrar solicitudes de vacaciones o inscripción de dependientes.
 
-## Objetivo
+---
+
+## 📌 Información de entrega
+
+### 🔗 Repositorio público
+
+**GitHub:** [https://github.com/LEARS1/mesa-ayuda-ia-rrhh-patito](https://github.com/LEARS1/mesa-ayuda-ia-rrhh-patito)
+
+> El repositorio debe mantenerse configurado como **público** durante el proceso de evaluación.
+
+### 🎥 Video de demostración
+
+▶️ **[Ver video de demostración del proyecto](PEGAR_AQUI_EL_ENLACE_DEL_VIDEO)**
+
+**Duración máxima requerida:** 10 minutos.
+
+El video presenta:
+
+- arquitectura general y papel de LangChain/LangGraph;
+- configuración de los tres agentes RAG;
+- embeddings de Google Gemini e índices Chroma independientes;
+- decisión del agente orquestador;
+- consulta simple y consulta mixta;
+- agente multimodal;
+- agente de acción con validación y registro;
+- control de alucinaciones;
+- observabilidad con Arize Phoenix;
+- riesgos, limitaciones y mejoras futuras.
+
+> Antes de entregar, reemplazar `PEGAR_AQUI_EL_ENLACE_DEL_VIDEO` por un enlace público o no listado de YouTube, o por un enlace de Google Drive configurado como “Cualquier persona con el enlace”.
+
+### 👥 Integrantes
+
+- Israel Onofre
+- **Nombre del segundo integrante**
+- **Nombre del tercer integrante**
+
+---
+
+## 🎯 Objetivo
 
 Demostrar una arquitectura de agentes con LangChain/LangGraph y Google Gemini que:
 
 - identifique qué especialidad debe intervenir;
 - responda con información recuperada de documentos ficticios;
 - consolide consultas mixtas;
-- exponga agentes y fuentes utilizados;
+- muestre los agentes y las fuentes utilizadas;
 - evite inventar información fuera del alcance;
-- ejecute acciones controladas con confirmación explícita.
+- procese imágenes de documentos de RR. HH.;
+- ejecute acciones controladas con validación y confirmación explícita;
+- permita observar trazas, latencia, herramientas y errores mediante Phoenix.
 
-## Tecnologías
+---
+
+## 🧠 Explicación sencilla del proyecto
+
+El sistema funciona como una oficina virtual de Recursos Humanos:
+
+- la **interfaz web** es la ventanilla de atención;
+- **FastAPI** recibe la pregunta del usuario;
+- el **orquestador** actúa como coordinador;
+- los **agentes especializados** son empleados expertos en distintos temas;
+- los **documentos TXT** son los manuales internos;
+- **Chroma** es el archivador inteligente;
+- **Gemini** interpreta la pregunta y redacta la respuesta;
+- el **agente multimodal** revisa imágenes;
+- el **agente de acción** registra solicitudes;
+- **Phoenix** permite observar qué ocurrió dentro del sistema.
+
+---
+
+## 🛠️ Tecnologías utilizadas
 
 - Python 3.10 o superior.
 - FastAPI.
-- LangChain y LangGraph.
+- LangChain.
+- LangGraph.
 - Google Gemini mediante `langchain-google-genai`.
 - `ChatGoogleGenerativeAI` para conversación y visión.
 - `GoogleGenerativeAIEmbeddings` para embeddings.
 - Chroma como vector store local.
+- Arize Phoenix y OpenInference para observabilidad.
 - HTML, CSS y JavaScript para la interfaz.
+- Git y GitHub para control de versiones y publicación.
 
-## Arquitectura
+---
 
-El componente central es un agente orquestador ReAct creado con LangGraph. El orquestador selecciona una o varias herramientas especializadas según la intención y el historial de la conversación.
+## 🏗️ Arquitectura
+
+El componente central es un agente orquestador ReAct. Este analiza la intención, consulta el historial de la conversación y selecciona una o varias herramientas especializadas.
 
 ```text
-Interfaz web / API
-        |
-        v
+Usuario
+  |
+  v
+Interfaz web / API FastAPI
+  |
+  v
 Agente Orquestador ReAct
-        |
-        +-- Beneficios y Compensaciones -> Chroma independiente
-        +-- Políticas Internas          -> Chroma independiente
-        +-- Reclutamiento/Onboarding    -> Chroma independiente
-        +-- Agente de Acción            -> registro TXT
-        +-- Agente Multimodal           -> Gemini con visión
+  |
+  +-- Agente de Beneficios y Compensaciones
+  |      +-- Documento propio
+  |      +-- Embeddings Gemini
+  |      +-- Colección Chroma independiente
+  |
+  +-- Agente de Políticas Internas
+  |      +-- Documento propio
+  |      +-- Embeddings Gemini
+  |      +-- Colección Chroma independiente
+  |
+  +-- Agente de Reclutamiento y Onboarding
+  |      +-- Documento propio
+  |      +-- Embeddings Gemini
+  |      +-- Colección Chroma independiente
+  |
+  +-- Agente Multimodal
+  |      +-- Gemini con visión
+  |
+  +-- Agente de Acción
+         +-- Validación
+         +-- Confirmación
+         +-- Registro TXT
+
+Todas las ejecuciones pueden enviarse a Arize Phoenix.
 ```
 
-Los tres dominios RAG se implementan como agentes lógicos especializados accesibles mediante tools. Cada uno tiene una base documental, retriever, colección Chroma y trazabilidad de fuentes independientes. La descripción ampliada está en [`docs/arquitectura.md`](docs/arquitectura.md).
+La descripción técnica ampliada está disponible en [`docs/arquitectura.md`](docs/arquitectura.md).
 
-## Agentes implementados
+---
+
+## 🤖 Agentes implementados
 
 ### Agente Orquestador ReAct
 
-- Recibe la consulta.
-- Usa memoria separada por `thread_id`.
-- Decide qué tools invocar.
-- Puede llamar varios dominios en una consulta mixta.
-- Consolida la respuesta final.
+- recibe la consulta;
+- mantiene memoria separada por `thread_id`;
+- clasifica la intención;
+- decide qué herramientas invocar;
+- puede llamar varios agentes en una consulta mixta;
+- detecta imágenes;
+- detecta solicitudes de acción;
+- consolida la respuesta final;
+- muestra agentes y fuentes participantes.
 
 ### Agente de Beneficios y Compensaciones
 
-Consulta exclusivamente `data/01_Beneficios_Compensaciones.txt` para seguros, dependientes, bonos y compensaciones.
+Consulta exclusivamente:
+
+```text
+data/01_Beneficios_Compensaciones.txt
+```
+
+Responde sobre:
+
+- seguro médico;
+- dependientes;
+- bonos;
+- beneficios;
+- compensaciones.
 
 ### Agente de Políticas Internas
 
-Consulta exclusivamente `data/02_Reglamento_Interno.txt` para vacaciones, permisos, conducta y reglamento.
+Consulta exclusivamente:
+
+```text
+data/02_Reglamento_Interno.txt
+```
+
+Responde sobre:
+
+- vacaciones;
+- permisos;
+- conducta;
+- reglamento interno;
+- políticas laborales.
 
 ### Agente de Reclutamiento y Onboarding
 
-Consulta exclusivamente `data/03_Reclutamiento_Onboarding.txt` para selección, referidos, inducción y nuevos ingresos.
+Consulta exclusivamente:
 
-### Agente de Acción
+```text
+data/03_Reclutamiento_Onboarding.txt
+```
 
-Registra solicitudes de vacaciones e inscripción de dependientes. Antes de escribir:
+Responde sobre:
 
-- recopila campos obligatorios;
-- valida fechas y anticipación mínima;
-- calcula días hábiles;
-- detecta duplicados;
-- solicita confirmación explícita;
-- genera ID único y fecha/hora;
-- maneja cancelación y errores.
+- procesos de selección;
+- programa de referidos;
+- onboarding;
+- inducción;
+- nuevos ingresos.
 
 ### Agente Multimodal
 
-Analiza JPG, JPEG, PNG o WEBP asociados al `thread_id` mediante Gemini con visión.
+Analiza imágenes JPG, JPEG, PNG o WEBP mediante Gemini con visión.
 
-## Implementación RAG
+Puede:
+
+- identificar campos;
+- extraer información visible;
+- detectar datos faltantes;
+- validar formularios ficticios de RR. HH.
+
+### Agente de Acción
+
+Registra solicitudes de vacaciones o inscripción de dependientes.
+
+Antes de escribir:
+
+- recopila los campos obligatorios;
+- solicita los datos faltantes;
+- valida fechas y anticipación;
+- calcula días hábiles;
+- detecta duplicados;
+- presenta un resumen;
+- solicita confirmación explícita;
+- genera un identificador único;
+- guarda fecha y hora;
+- maneja cancelaciones y errores.
+
+El registro se almacena en:
+
+```text
+registro_solicitudes_rrhh.txt
+```
+
+---
+
+## 📚 Implementación RAG
 
 ### Chunking
 
-Los documentos son pequeños y estructurados por secciones. Se separan por párrafos usando dobles saltos de línea. La ventaja es conservar unidades semánticas legibles y fuentes fáciles de explicar. La limitación es que documentos extensos requerirían un splitter por tokens con solapamiento.
+Los documentos ficticios son pequeños y están organizados por secciones. Se dividen por párrafos utilizando dobles saltos de línea.
 
-### Embeddings y vector store
+Ventajas:
 
-Cada chunk se transforma con `GoogleGenerativeAIEmbeddings` y se almacena en una colección Chroma dedicada:
+- conserva unidades semánticas legibles;
+- facilita explicar las fuentes;
+- reduce el contexto innecesario.
+
+Limitación:
+
+- documentos extensos requerirían un divisor por tokens con solapamiento.
+
+### Embeddings
+
+Cada fragmento se transforma mediante:
+
+```python
+GoogleGenerativeAIEmbeddings
+```
+
+Los embeddings representan el significado del texto en forma numérica.
+
+### Vector store
+
+Se utiliza Chroma con una colección independiente por dominio:
 
 - `beneficios_compensaciones`;
 - `politicas_internas`;
@@ -97,105 +266,283 @@ Cada chunk se transforma con `GoogleGenerativeAIEmbeddings` y se almacena en una
 
 ### Recuperación
 
-Cada retriever usa `top-k = 4`. Este valor ofrece contexto suficiente para documentos pequeños sin enviar demasiados fragmentos al modelo. En producción debe ajustarse mediante evaluación de precisión y cobertura.
+Cada retriever utiliza:
+
+```text
+top-k = 4
+```
+
+Esto permite recuperar hasta cuatro fragmentos relevantes por consulta.
 
 ### Control de alucinaciones
 
-El modelo recibe instrucciones de responder únicamente con el contexto recuperado. Cuando no hay información suficiente debe responder:
+El modelo debe responder únicamente con el contexto recuperado.
+
+Cuando la información no existe, responde:
 
 > No encontré información suficiente en la base documental proporcionada.
 
-## Trazabilidad
+---
 
-Cada respuesta de la API puede incluir:
+## 🔎 Trazabilidad
+
+Cada respuesta puede incluir:
 
 - agentes participantes;
 - herramientas utilizadas;
 - documento fuente;
-- número de chunk;
+- número o contenido del chunk;
 - advertencias;
 - tiempo de respuesta;
-- cantidad de herramientas y fuentes.
+- cantidad de fuentes;
+- cantidad de herramientas ejecutadas.
 
-## Estructura del proyecto
+---
+
+## 📁 Estructura del proyecto
 
 ```text
-agents/                  Agente ReAct, acción y multimodal
-api/                     Modelos de entrada
-config/                  Configuración y variables de entorno
-core/                    Estado y constantes
-data/                    Tres documentos ficticios
- docs/                    Arquitectura, pruebas, riesgos y mejoras
- rag/                     Recuperación e índices vectoriales
- services/                Reglas de negocio de solicitudes
- templates/               Interfaz web
- tests/imagenes/          Imagen ficticia de demostración
- main.py                  API FastAPI
- .env.example             Plantilla sin secretos
- requirements.txt         Dependencias
- registro_solicitudes_rrhh.txt  Evidencia del agente de acción
+agents/                         Agentes ReAct, acción y multimodal
+api/                            Modelos y componentes de API
+config/                         Configuración y variables de entorno
+core/                           Estado, constantes y memoria
+data/                           Tres documentos ficticios
+docs/                           Arquitectura, pruebas, riesgos y Phoenix
+observability/                  Configuración de Arize Phoenix
+rag/                            Embeddings, recuperación e índices
+services/                       Reglas de negocio de solicitudes
+templates/                      Interfaz web
+tests/                          Pruebas automáticas
+tests/imagenes/                 Imagen ficticia de demostración
+uploads/                        Cargas temporales
+utils/                          Funciones auxiliares
+main.py                         Aplicación FastAPI
+.env.example                    Plantilla sin secretos
+.gitignore                      Archivos excluidos de Git
+requirements.txt                Dependencias
+registro_solicitudes_rrhh.txt   Evidencia del agente de acción
 ```
 
-## Instalación
+---
 
-### 1. Crear entorno virtual
+# ⚙️ Instrucciones de ejecución
+
+## 1. Requisitos previos
+
+Instalar:
+
+- Python 3.10 o superior;
+- Git;
+- una API key válida de Google Gemini;
+- conexión a Internet;
+- PowerShell, CMD o una terminal compatible.
+
+Comprobar Python:
+
+```powershell
+python --version
+```
+
+Comprobar Git:
+
+```powershell
+git --version
+```
+
+---
+
+## 2. Clonar el repositorio
+
+```powershell
+git clone https://github.com/LEARS1/mesa-ayuda-ia-rrhh-patito.git
+cd mesa-ayuda-ia-rrhh-patito
+```
+
+---
+
+## 3. Crear el entorno virtual
+
+### Windows PowerShell
 
 ```powershell
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-En Linux/macOS:
+Si PowerShell bloquea la activación:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\venv\Scripts\Activate.ps1
+```
+
+### Windows CMD
+
+```cmd
+python -m venv venv
+venv\Scripts\activate.bat
+```
+
+### Linux/macOS
 
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 2. Instalar dependencias
+---
+
+## 4. Instalar las dependencias
 
 ```powershell
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-### 3. Configurar secretos
+---
 
-Copiar `.env.example` como `.env`:
+## 5. Configurar las variables de entorno
+
+Copiar la plantilla:
+
+### PowerShell
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Editar `.env` y colocar la clave real:
+### CMD
 
-```env
-GOOGLE_API_KEY=su_clave_real
+```cmd
+copy .env.example .env
 ```
 
-Nunca subir `.env` al repositorio.
+### Linux/macOS
 
-### 4. Ejecutar
+```bash
+cp .env.example .env
+```
+
+Abrir `.env` y colocar una clave válida:
+
+```env
+GOOGLE_API_KEY=COLOQUE_AQUI_SU_API_KEY
+```
+
+Configuración recomendada de modelos:
+
+```env
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_VISION_MODEL=gemini-3.5-flash-lite
+GEMINI_EMBEDDING_MODEL=gemini-embedding-2
+```
+
+Configuración de Phoenix:
+
+```env
+PHOENIX_ENABLED=true
+PHOENIX_PROJECT_NAME=mesa-ayuda-rrhh-patito
+PHOENIX_COLLECTOR_ENDPOINT=http://127.0.0.1:6006/v1/traces
+PHOENIX_PROTOCOL=http/protobuf
+```
+
+> El archivo `.env` contiene secretos y nunca debe subirse a GitHub.
+
+---
+
+## 6. Ejecutar las pruebas
+
+Con el entorno virtual activado:
 
 ```powershell
+python tests\verificacion_estatica.py
+python tests\verificacion_cambio_intencion.py
+python tests\verificacion_phoenix.py
+```
+
+Resultados esperados:
+
+```text
+OK: estructura y entregables mínimos presentes.
+OK: el cambio de intención funciona correctamente.
+OK: integración estática de Phoenix completa.
+```
+
+---
+
+## 7. Iniciar Arize Phoenix
+
+Abrir una terminal y activar el entorno virtual:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+phoenix serve
+```
+
+Phoenix estará disponible en:
+
+```text
+http://127.0.0.1:6006
+```
+
+El endpoint OTLP HTTP utilizado por la aplicación es:
+
+```text
+http://127.0.0.1:6006/v1/traces
+```
+
+---
+
+## 8. Iniciar la aplicación
+
+Abrir una segunda terminal:
+
+```powershell
+cd C:\RUTA\AL\PROYECTO
+.\venv\Scripts\Activate.ps1
 python -m uvicorn main:app --reload
 ```
 
-Abrir:
+La aplicación estará disponible en:
 
 - Interfaz: `http://127.0.0.1:8000`
 - Swagger: `http://127.0.0.1:8000/docs`
+- Estado de Phoenix: `http://127.0.0.1:8000/observabilidad/estado`
 
-En el primer inicio se generan los índices Chroma. La carpeta `chroma_db` no debe versionarse.
+En el primer inicio se generan o validan los índices Chroma.
 
-## Endpoints principales
+---
 
-- `POST /chat`: consulta normal.
-- `POST /chat-imagen`: consulta con imagen.
-- `GET /solicitudes`: historial confirmado.
-- `GET /solicitudes/estado/{thread_id}`: estado actual.
-- `GET /solicitudes/panel/{thread_id}`: estado e historial para la interfaz.
+## 9. Verificar Phoenix
 
-## Ejemplos
+Abrir:
+
+```text
+http://127.0.0.1:8000/observabilidad/estado
+```
+
+Resultado esperado:
+
+```json
+{
+  "habilitado": true,
+  "inicializado": true,
+  "proyecto": "mesa-ayuda-rrhh-patito",
+  "collector_endpoint": "http://127.0.0.1:6006/v1/traces",
+  "protocolo": "http/protobuf",
+  "error": null
+}
+```
+
+Después de realizar una consulta, Phoenix debe recibir solicitudes en:
+
+```text
+POST /v1/traces
+```
+
+---
+
+## 10. Probar el sistema
 
 ### Consulta simple
 
@@ -206,24 +553,48 @@ En el primer inicio se generan los índices Chroma. La carpeta `chroma_db` no de
 ### Consulta mixta
 
 ```text
-¿Cuántos días de vacaciones tengo, qué cubre el seguro médico y cómo funciona el programa de referidos?
+¿Cuántos días de vacaciones me corresponden, qué cubre el seguro médico y cómo funciona el programa de referidos?
 ```
 
-Se espera que intervengan los agentes de Políticas, Beneficios y Reclutamiento/Onboarding.
+Se espera que intervengan:
+
+- Políticas Internas;
+- Beneficios y Compensaciones;
+- Reclutamiento y Onboarding.
+
+### Pregunta fuera del alcance
+
+```text
+¿Cuál será el precio de las acciones de Patito S.A. el próximo año?
+```
+
+Respuesta esperada:
+
+```text
+No encontré información suficiente en la base documental proporcionada.
+```
 
 ### Solicitud de acción
 
 ```text
 Quiero solicitar vacaciones.
+```
+
+Después proporcionar:
+
+```text
 Mi nombre es Usuario de Prueba.
-Del 17 al 21 de agosto de 2026.
+Deseo vacaciones del 17 al 21 de agosto de 2026.
 Mi jefe aprobador es Jefe de Prueba.
+```
+
+Confirmar con:
+
+```text
 Confirmo.
 ```
 
-Más casos en [`docs/ejemplos_pruebas.md`](docs/ejemplos_pruebas.md).
-
-## Imagen de prueba
+### Imagen de prueba
 
 Usar:
 
@@ -231,107 +602,185 @@ Usar:
 tests/imagenes/formulario_dependiente_prueba.png
 ```
 
-Ejemplo:
+Pregunta sugerida:
 
 ```text
-¿Está completo este formulario y qué datos faltan?
+Revisa este formulario e indica qué información está completa y qué datos faltan.
 ```
 
-## Seguridad y privacidad
+Más casos están disponibles en [`docs/ejemplos_pruebas.md`](docs/ejemplos_pruebas.md).
+
+---
+
+## 🌐 Endpoints principales
+
+- `GET /`: interfaz web.
+- `POST /chat`: consulta normal.
+- `POST /chat-imagen`: consulta con imagen.
+- `GET /solicitudes`: historial confirmado.
+- `GET /solicitudes/estado/{thread_id}`: estado actual.
+- `GET /solicitudes/panel/{thread_id}`: estado e historial.
+- `GET /observabilidad/estado`: estado de Phoenix.
+
+---
+
+## 👁️ Observabilidad con Arize Phoenix
+
+Al activar:
+
+```env
+PHOENIX_ENABLED=true
+```
+
+las ejecuciones de LangChain/LangGraph se envían a Phoenix y se agrupan mediante el mismo `thread_id` utilizado por la memoria conversacional.
+
+Phoenix permite revisar:
+
+- herramientas utilizadas;
+- llamadas a Gemini;
+- latencia;
+- tokens;
+- errores;
+- sesiones;
+- selección de agentes;
+- trazas de consultas simples, mixtas, multimodales y de acción.
+
+La metadata añadida es operativa y no debe contener:
+
+- nombres reales;
+- cédulas;
+- documentos sensibles;
+- rutas locales;
+- imágenes en Base64.
+
+Guía ampliada:
+
+[`docs/observabilidad_phoenix.md`](docs/observabilidad_phoenix.md)
+
+---
+
+## 🔐 Seguridad y privacidad
 
 - La API key se carga desde `.env`.
-- `.env`, `venv`, `chroma_db` y archivos temporales no se versionan.
-- No deben usarse datos personales reales durante la demostración.
-- Los logs deben evitar preguntas completas o documentos sensibles.
-- Las imágenes de prueba son ficticias.
+- `.env` no se sube a GitHub.
+- `.env.example` no contiene secretos.
+- `venv`, `chroma_db`, cachés y archivos temporales se excluyen con `.gitignore`.
+- No deben utilizarse datos personales reales durante las pruebas.
+- Los documentos e imágenes del proyecto son ficticios.
+- Los logs deben evitar información sensible.
+- El repositorio debe revisarse antes de cada entrega.
 
-## Limitaciones
+---
 
-- Memoria conversacional en RAM.
+## ⚠️ Limitaciones
+
+- Memoria conversacional almacenada en RAM.
 - Persistencia de acciones mediante TXT.
 - Sin autenticación ni autorización.
+- Sin control de acceso por roles.
 - Sin bloqueo transaccional para escrituras concurrentes.
-- Dependencia de disponibilidad y cuota de Gemini.
+- Dependencia de la disponibilidad y cuota de Gemini.
+- Documentos de prueba pequeños.
 - Prototipo académico, no solución productiva.
 
-## Monitoreo propuesto
+---
 
-La API mide latencia, cantidad de tools y fuentes. Para una versión productiva se propone:
+## 🚀 Riesgos y mejoras futuras
 
-- callbacks para tokens y coste de Gemini;
-- tasa de errores por endpoint y agente;
-- precisión de recuperación con conjunto evaluado;
-- feedback positivo/negativo del usuario;
-- alertas por latencia y fallos de Chroma;
-- anonimización y política de retención.
+Para una versión productiva se propone:
 
-## Riesgos y mejoras futuras
+- base de datos transaccional;
+- autenticación;
+- autorización por roles;
+- permisos por agente y documento;
+- cifrado de información;
+- anonimización de trazas;
+- auditoría;
+- almacenamiento seguro de imágenes;
+- evaluación automática de respuestas;
+- feedback de usuarios;
+- monitoreo de costos y tokens;
+- alertas por errores y latencia;
+- pruebas de carga;
+- despliegue con Docker;
+- gestión centralizada de secretos.
 
-Consultar [`docs/riesgos_mejoras.md`](docs/riesgos_mejoras.md).
+Consultar:
 
-## Entregables recomendados
+[`docs/riesgos_mejoras.md`](docs/riesgos_mejoras.md)
 
-- Código fuente en GitHub.
-- README y `.env.example`.
-- Tres documentos ficticios.
-- Proceso reproducible de índices.
-- Ejemplos de pruebas y consulta mixta.
-- Imagen ficticia y TXT generado.
-- Arquitectura y riesgos.
-- Video de máximo 10 minutos.
+---
 
-## Mejora de cambio de intención
+## ✅ Cumplimiento de requisitos
 
-Una solicitud pendiente no bloquea las demás funciones. El sistema distingue entre:
+- [x] Repositorio de GitHub.
+- [x] Repositorio público.
+- [x] README con instrucciones paso a paso.
+- [x] `.env.example` sin credenciales reales.
+- [x] Tres agentes RAG obligatorios.
+- [x] Agente orquestador.
+- [x] Índice vectorial independiente por agente.
+- [x] Google Gemini como LLM.
+- [x] Google Gemini para embeddings.
+- [x] Chroma como vector store.
+- [x] Consulta mixta.
+- [x] Trazabilidad de agentes y fuentes.
+- [x] Control de alucinaciones.
+- [x] Agente multimodal.
+- [x] Agente de acción.
+- [x] Validación y confirmación.
+- [x] Registro TXT.
+- [x] Observabilidad con Arize Phoenix.
+- [x] Documentación de arquitectura.
+- [x] Pruebas y ejemplos.
+- [ ] Enlace final del video agregado al README.
+- [ ] Nombres completos de los tres integrantes.
 
-- respuestas que completan, confirman o cancelan el borrador;
-- consultas informativas de beneficios, políticas u onboarding;
-- análisis de una imagen recién adjuntada.
+---
 
-Las consultas independientes conservan el borrador sin modificarlo. Las imágenes recién adjuntadas se envían directamente al agente multimodal para evitar que el historial transaccional cambie su intención.
-
-## Observabilidad con Arize Phoenix
-
-El proyecto incorpora trazabilidad opcional con Phoenix y OpenInference. Al
-activar `PHOENIX_ENABLED=true`, las ejecuciones de LangChain/LangGraph se envían
-a Phoenix y se agrupan por el mismo `thread_id` utilizado por la memoria del
-chat.
-
-### Ejecutar Phoenix
-
-En una terminal:
+## 📦 Actualizar el repositorio después de modificar el README
 
 ```powershell
-phoenix serve
+git status
+git add README.md
+git commit -m "Actualiza README con instrucciones y video del proyecto"
+git push
 ```
 
-En otra terminal:
+Comprobar:
 
 ```powershell
-python -m uvicorn main:app --reload
-```
-
-Abrir:
-
-- Phoenix: `http://127.0.0.1:6006`
-- Aplicación: `http://127.0.0.1:8000`
-- Estado de tracing: `http://127.0.0.1:8000/observabilidad/estado`
-
-Las consultas de texto usan etiquetas `chat_texto` y las imágenes
-`chat_imagen`. La metadata añadida es operativa y no incluye nombres,
-documentos de identidad, rutas locales ni contenido Base64.
-
-La guía completa está en
-[`docs/observabilidad_phoenix.md`](docs/observabilidad_phoenix.md).
-
-### Verificación
-
-```powershell
-python tests\verificacion_phoenix.py
+git status
 ```
 
 Resultado esperado:
 
 ```text
-OK: integración estática de Phoenix completa.
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+```
+
+---
+
+## 📄 Licencia y uso
+
+Proyecto académico desarrollado exclusivamente con fines educativos para el Semillero de Inteligencia Artificial. Los documentos, nombres y datos utilizados son ficticios.
+
+
+## Consulta de solicitudes registradas
+
+El chat distingue entre el historial confirmado y un borrador pendiente. Por ejemplo:
+
+```text
+¿Qué solicitudes tengo registradas?
+```
+
+La respuesta muestra las solicitudes guardadas en `registro_solicitudes_rrhh.txt` y, si existe, informa por separado sobre el borrador actual sin modificarlo.
+
+Prueba automática:
+
+```powershell
+python tests\verificacion_historial_solicitudes.py
 ```

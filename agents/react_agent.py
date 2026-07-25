@@ -21,6 +21,8 @@ from langgraph.prebuilt import create_react_agent
 
 from rag.services import consultar_rag
 from services.request_service import (
+    consultar_historial_solicitudes,
+    es_consulta_de_solicitudes_registradas,
     mensaje_relacionado_con_solicitud_pendiente,
     procesar_solicitud_accion,
 )
@@ -824,6 +826,25 @@ def ejecutar_agente(
         llm_vision=llm_vision
 
     )
+
+
+    # Las consultas del historial tienen prioridad sobre un borrador
+    # pendiente. Consultar lo ya registrado no debe modificar ni
+    # completar accidentalmente la solicitud actual.
+    if es_consulta_de_solicitudes_registradas(pregunta):
+        _registrar_herramienta(
+            "Consulta de historial de solicitudes"
+        )
+        resultado_historial = consultar_historial_solicitudes(
+            thread_id
+        )
+        return {
+            "respuesta": resultado_historial["respuesta"],
+            "fuentes": resultado_historial.get("fuentes", []),
+            "herramientas": obtener_herramientas_ejecucion(),
+            "agentes": resultado_historial.get("agentes", []),
+            "thread_id": thread_id,
+        }
 
 
     # Si hay un borrador y el mensaje realmente lo continúa,

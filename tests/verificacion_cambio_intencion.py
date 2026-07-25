@@ -29,6 +29,7 @@ CASOS = {
     "¿Qué cubre el seguro médico?": False,
     "Analiza esta imagen": False,
     "¿Cuántos días de vacaciones tengo?": False,
+    "Deseo saber qué solicitud está guardada hasta el momento": False,
     "Del 10 al 14 de agosto de 2026": True,
     "Mi jefe es Carlos López": True,
     "confirmo": True,

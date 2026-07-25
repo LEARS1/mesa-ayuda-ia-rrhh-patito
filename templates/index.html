@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesa de Ayuda IA - RRHH</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #eef2f7; min-height: 100vh; padding: 24px; color: #172033; }
+        .app-shell { width: min(1400px, 100%); height: calc(100vh - 48px); margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; }
+        .chat-container, .side-panel { background: #fff; border-radius: 18px; box-shadow: 0 12px 34px rgba(15, 23, 42, .12); overflow: hidden; min-height: 0; }
+        .chat-container { display: flex; flex-direction: column; }
+        .chat-header, .panel-header { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; padding: 20px; }
+        .chat-header h1 { font-size: 24px; margin-bottom: 5px; }
+        .chat-header p, .panel-header p { font-size: 14px; opacity: .9; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc; }
+        .message { display: flex; margin-bottom: 15px; }
+        .message.user { justify-content: flex-end; }
+        .message.bot { justify-content: flex-start; }
+        .message-content { max-width: 78%; padding: 12px 16px; border-radius: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .message.user .message-content { background: #2563eb; color: white; border-bottom-right-radius: 4px; }
+        .message.bot .message-content { background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 4px; }
+        .chat-input-area { border-top: 1px solid #e2e8f0; padding: 15px; background: white; }
+        .file-preview { display: none; margin-bottom: 10px; padding: 8px 10px; background: #eff6ff; border-radius: 8px; font-size: 13px; color: #1e40af; }
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        .message-input { flex: 1; min-width: 0; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; outline: none; font-size: 15px; }
+        .message-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+        .file-button, .send-button, .refresh-button { cursor: pointer; border: none; border-radius: 10px; padding: 12px; }
+        .file-button { background: #e2e8f0; font-size: 18px; }
+        .send-button { background: #2563eb; color: white; padding: 12px 20px; font-size: 15px; }
+        .send-button:hover { background: #1d4ed8; }
+        .send-button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .loading { font-style: italic; color: #64748b; }
+        .side-panel { display: flex; flex-direction: column; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .panel-header h2 { font-size: 20px; margin-bottom: 4px; }
+        .refresh-button { background: rgba(255,255,255,.18); color: white; font-size: 18px; }
+        .panel-content { overflow-y: auto; padding: 16px; background: #f8fafc; }
+        .panel-section { margin-bottom: 18px; }
+        .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin-bottom: 9px; }
+        .request-card { background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 11px; box-shadow: 0 3px 10px rgba(15,23,42,.04); }
+        .request-card.current { border-color: #93c5fd; }
+        .request-card.empty { text-align: center; color: #64748b; padding: 24px 14px; }
+        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+        .card-title { font-weight: 700; color: #0f172a; }
+        .request-id { color: #64748b; font-size: 12px; margin-top: 3px; word-break: break-all; }
+        .status { display: inline-flex; border-radius: 999px; padding: 5px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .status-recopilando_datos { background: #fef3c7; color: #92400e; }
+        .status-pendiente_confirmacion { background: #dbeafe; color: #1e40af; }
+        .status-registrada { background: #dcfce7; color: #166534; }
+        .status-cancelada { background: #fee2e2; color: #991b1b; }
+        .detail-grid { display: grid; grid-template-columns: 120px 1fr; gap: 7px 10px; font-size: 13px; }
+        .detail-label { color: #64748b; }
+        .detail-value { color: #1e293b; font-weight: 600; overflow-wrap: anywhere; }
+        .missing { margin-top: 12px; padding: 9px; border-radius: 9px; background: #fff7ed; color: #9a3412; font-size: 12px; line-height: 1.45; }
+        .history-list { max-height: 48vh; overflow-y: auto; padding-right: 2px; }
+        @media (max-width: 980px) {
+            body { padding: 12px; }
+            .app-shell { height: auto; min-height: calc(100vh - 24px); grid-template-columns: 1fr; }
+            .chat-container { height: 78vh; }
+            .side-panel { max-height: 70vh; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <section class="chat-container">
+        <div class="chat-header">
+            <h1>Mesa de Ayuda IA</h1>
+            <p>Recursos Humanos - Patito S.A.</p>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <div class="message bot"><div class="message-content">Hola 👋\n\nSoy la Mesa de Ayuda IA de Recursos Humanos de Patito S.A.\n\n¿En qué puedo ayudarte?</div></div>
+        </div>
+        <div class="chat-input-area">
+            <div id="filePreview" class="file-preview">📎 Archivo seleccionado: <span id="fileName"></span></div>
+            <div class="input-row">
+                <label for="imageInput" class="file-button" title="Adjuntar imagen">📎</label>
+                <input type="file" id="imageInput" accept=".jpg,.jpeg,.png,.webp" hidden>
+                <input type="text" id="messageInput" class="message-input" placeholder="Escribe tu consulta...">
+                <button id="sendButton" class="send-button" onclick="enviarMensaje()">Enviar</button>
+            </div>
+        </div>
+    </section>
+
+    <aside class="side-panel">
+        <div class="panel-header">
+            <div><h2>Solicitudes RR. HH.</h2><p>Estado actual e historial</p></div>
+            <button class="refresh-button" onclick="actualizarPanel()" title="Actualizar">↻</button>
+        </div>
+        <div class="panel-content">
+            <section class="panel-section">
+                <div class="section-title">Solicitud actual</div>
+                <div id="currentRequest"></div>
+            </section>
+            <section class="panel-section">
+                <div class="section-title">Solicitudes registradas</div>
+                <div id="requestHistory" class="history-list"></div>
+            </section>
+        </div>
+    </aside>
+</div>
+
+<script>
+    const threadId = localStorage.getItem("rrhhThreadId") || `usuario_web_${crypto.randomUUID()}`;
+    localStorage.setItem("rrhhThreadId", threadId);
+
+    const messageInput = document.getElementById("messageInput");
+    const imageInput = document.getElementById("imageInput");
+    const sendButton = document.getElementById("sendButton");
+    const chatMessages = document.getElementById("chatMessages");
+    const filePreview = document.getElementById("filePreview");
+    const fileName = document.getElementById("fileName");
+
+    const labels = {
+        nombre: "Colaborador", fecha_inicio: "Fecha de inicio", fecha_fin: "Fecha de fin",
+        dias: "Días hábiles", jefe_aprobador: "Jefe aprobador", dependiente: "Dependiente",
+        vinculo: "Vínculo", documentos_respaldo: "Documentos"
+    };
+
+    imageInput.addEventListener("change", () => {
+        const file = imageInput.files[0];
+        fileName.textContent = file ? file.name : "";
+        filePreview.style.display = file ? "block" : "none";
+    });
+
+    messageInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") { event.preventDefault(); enviarMensaje(); }
+    });
+
+    function escapar(valor) {
+        return String(valor ?? "").replace(/[&<>'"]/g, char => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+        })[char]);
+    }
+
+    function agregarMensaje(mensaje, tipo) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${tipo}`;
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "message-content";
+        contentDiv.textContent = mensaje;
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function mostrarCargando() {
+        const div = document.createElement("div");
+        div.id = "loadingMessage";
+        div.className = "message bot";
+        div.innerHTML = '<div class="message-content loading">Procesando consulta...</div>';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function ocultarCargando() {
+        document.getElementById("loadingMessage")?.remove();
+    }
+
+    function textoEstado(estado) {
+        return ({
+            recopilando_datos: "Recopilando datos",
+            pendiente_confirmacion: "Por confirmar",
+            registrada: "Registrada",
+            cancelada: "Cancelada",
+            sin_solicitud: "Sin solicitud"
+        })[estado] || estado;
+    }
+
+    function renderDetalle(datos = {}) {
+        const entradas = Object.entries(datos).filter(([clave, valor]) =>
+            clave !== "tipo" && valor !== "" && valor !== null && valor !== 0
+        );
+        if (!entradas.length) return "";
+        return `<div class="detail-grid">${entradas.map(([clave, valor]) =>
+            `<div class="detail-label">${escapar(labels[clave] || clave)}</div><div class="detail-value">${escapar(valor)}</div>`
+        ).join("")}</div>`;
+    }
+
+    function renderSolicitudActual(solicitud) {
+        const destino = document.getElementById("currentRequest");
+        if (!solicitud?.activa) {
+            destino.innerHTML = '<div class="request-card empty">No hay una solicitud activa en esta conversación.</div>';
+            return;
+        }
+        const faltantes = solicitud.campos_faltantes || [];
+        destino.innerHTML = `
+            <div class="request-card current">
+                <div class="card-top">
+                    <div><div class="card-title">${escapar((solicitud.tipo || "Solicitud").toUpperCase())}</div>
+                    ${solicitud.id ? `<div class="request-id">${escapar(solicitud.id)}</div>` : ""}</div>
+                    <span class="status status-${escapar(solicitud.estado)}">${escapar(textoEstado(solicitud.estado))}</span>
+                </div>
+                ${renderDetalle(solicitud.datos)}
+                ${solicitud.fecha_registro ? `<div class="missing">Registrada: ${escapar(solicitud.fecha_registro)}</div>` : ""}
+                ${faltantes.length ? `<div class="missing"><strong>Falta completar:</strong> ${faltantes.map(c => escapar(labels[c] || c)).join(", ")}</div>` : ""}
+                ${solicitud.mensaje ? `<div class="missing">${escapar(solicitud.mensaje)}</div>` : ""}
+            </div>`;
+    }
+
+    function renderHistorial(solicitudes) {
+        const destino = document.getElementById("requestHistory");
+        if (!solicitudes?.length) {
+            destino.innerHTML = '<div class="request-card empty">Todavía no existen solicitudes registradas.</div>';
+            return;
+        }
+        destino.innerHTML = solicitudes.map(solicitud => `
+            <div class="request-card">
+                <div class="card-top">
+                    <div><div class="card-title">${escapar(solicitud.tipo || "SOLICITUD")}</div><div class="request-id">${escapar(solicitud.id || "")}</div></div>
+                    <span class="status status-registrada">Registrada</span>
+                </div>
+                ${renderDetalle(solicitud.datos || {})}
+                <div class="missing">Fecha: ${escapar(solicitud.fecha_registro || "")}</div>
+            </div>`).join("");
+    }
+
+    async function actualizarPanel(datosRespuesta = null) {
+        try {
+            if (datosRespuesta?.solicitud_actual) renderSolicitudActual(datosRespuesta.solicitud_actual);
+            const response = await fetch(`/solicitudes/panel/${encodeURIComponent(threadId)}`);
+            if (!response.ok) throw new Error("No se pudo actualizar el panel");
+            const data = await response.json();
+            renderSolicitudActual(data.solicitud_actual);
+            renderHistorial(data.solicitudes_registradas);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function enviarMensaje() {
+        const pregunta = messageInput.value.trim();
+        const imagen = imageInput.files[0];
+        if (!pregunta && !imagen) { alert("Escribe una consulta o selecciona una imagen."); return; }
+
+        if (pregunta) agregarMensaje(pregunta, "user");
+        if (imagen) agregarMensaje(`📎 Imagen enviada: ${imagen.name}`, "user");
+        messageInput.value = "";
+        sendButton.disabled = true;
+        mostrarCargando();
+
+        try {
+            let response;
+            if (imagen) {
+                const formData = new FormData();
+                formData.append("pregunta", pregunta || "Analiza esta imagen.");
+                formData.append("imagen", imagen);
+                formData.append("thread_id", threadId);
+                response = await fetch("/chat-imagen", { method: "POST", body: formData });
+            } else {
+                response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pregunta, thread_id: threadId })
+                });
+            }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || "Error en el servidor.");
+            agregarMensaje(data.respuesta || "No se recibió respuesta.", "bot");
+            await actualizarPanel(data);
+        } catch (error) {
+            agregarMensaje(`❌ Error: ${error.message}`, "bot");
+        } finally {
+            ocultarCargando();
+            sendButton.disabled = false;
+            imageInput.value = "";
+            filePreview.style.display = "none";
+            fileName.textContent = "";
+            messageInput.focus();
+        }
+    }
+
+    actualizarPanel();
+</script>
+</body>
+</html>

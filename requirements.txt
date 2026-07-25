@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+langchain
+langchain-google-genai
+langchain-chroma
+langgraph
+python-dotenv
+python-multipart
+
+# Observabilidad con Arize Phoenix
+arize-phoenix
+arize-phoenix-otel>=0.16.0
+openinference-instrumentation-langchain

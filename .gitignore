@@ -1,0 +1,13 @@
+.env
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+chroma_db/
+uploads/*
+!uploads/.gitkeep
+*.zip
+*.rar
+.DS_Store
+.vscode/
+.idea/

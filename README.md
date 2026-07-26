@@ -706,6 +706,9 @@ Consultar:
 
 ```
 
+---
+
 ## 📄 Licencia y uso
 
 Proyecto académico desarrollado exclusivamente con fines educativos para el Semillero de Inteligencia Artificial. Los documentos, nombres y datos utilizados son ficticios.
+

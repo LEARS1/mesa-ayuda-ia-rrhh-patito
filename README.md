@@ -14,7 +14,7 @@ Prototipo funcional desarrollado para el proyecto final del **Semillero de Intel
 
 ### 🎥 Video de demostración
 
-▶️ **[Ver video de demostración del proyecto](PEGAR_AQUI_EL_ENLACE_DEL_VIDEO)**
+▶️ https://drive.google.com/file/d/1pw_crC4tPk6fZSQDKzxzNOxKIGbKgaq1/view?usp=sharing
 
 **Duración máxima requerida:** 10 minutos.
 
@@ -31,15 +31,10 @@ El video presenta:
 - observabilidad con Arize Phoenix;
 - riesgos, limitaciones y mejoras futuras.
 
-> Antes de entregar, reemplazar `PEGAR_AQUI_EL_ENLACE_DEL_VIDEO` por un enlace público o no listado de YouTube, o por un enlace de Google Drive configurado como “Cualquier persona con el enlace”.
-
 ### 👥 Integrantes
-
+*Solo los Mecionados participaron en el proyecto
 - Israel Onofre
-- **Nombre del segundo integrante**
-- **Nombre del tercer integrante**
-
----
+- Dolores Guevara
 
 ## 🎯 Objetivo
 
@@ -709,34 +704,6 @@ Consultar:
 
 [`docs/riesgos_mejoras.md`](docs/riesgos_mejoras.md)
 
----
-
-## ✅ Cumplimiento de requisitos
-
-- [x] Repositorio de GitHub.
-- [x] Repositorio público.
-- [x] README con instrucciones paso a paso.
-- [x] `.env.example` sin credenciales reales.
-- [x] Tres agentes RAG obligatorios.
-- [x] Agente orquestador.
-- [x] Índice vectorial independiente por agente.
-- [x] Google Gemini como LLM.
-- [x] Google Gemini para embeddings.
-- [x] Chroma como vector store.
-- [x] Consulta mixta.
-- [x] Trazabilidad de agentes y fuentes.
-- [x] Control de alucinaciones.
-- [x] Agente multimodal.
-- [x] Agente de acción.
-- [x] Validación y confirmación.
-- [x] Registro TXT.
-- [x] Observabilidad con Arize Phoenix.
-- [x] Documentación de arquitectura.
-- [x] Pruebas y ejemplos.
-- [ ] Enlace final del video agregado al README.
-- [ ] Nombres completos de los tres integrantes.
-
----
 
 ## 📦 Actualizar el repositorio después de modificar el README
 
@@ -762,25 +729,6 @@ Your branch is up to date with 'origin/main'.
 nothing to commit, working tree clean
 ```
 
----
-
 ## 📄 Licencia y uso
 
 Proyecto académico desarrollado exclusivamente con fines educativos para el Semillero de Inteligencia Artificial. Los documentos, nombres y datos utilizados son ficticios.
-
-
-## Consulta de solicitudes registradas
-
-El chat distingue entre el historial confirmado y un borrador pendiente. Por ejemplo:
-
-```text
-¿Qué solicitudes tengo registradas?
-```
-
-La respuesta muestra las solicitudes guardadas en `registro_solicitudes_rrhh.txt` y, si existe, informa por separado sobre el borrador actual sin modificarlo.
-
-Prueba automática:
-
-```powershell
-python tests\verificacion_historial_solicitudes.py
-```

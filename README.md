@@ -704,29 +704,6 @@ Consultar:
 
 [`docs/riesgos_mejoras.md`](docs/riesgos_mejoras.md)
 
-
-## 📦 Actualizar el repositorio después de modificar el README
-
-```powershell
-git status
-git add README.md
-git commit -m "Actualiza README con instrucciones y video del proyecto"
-git push
-```
-
-Comprobar:
-
-```powershell
-git status
-```
-
-Resultado esperado:
-
-```text
-On branch main
-Your branch is up to date with 'origin/main'.
-
-nothing to commit, working tree clean
 ```
 
 ## 📄 Licencia y uso

@@ -14,7 +14,7 @@ Prototipo funcional desarrollado para el proyecto final del **Semillero de Intel
 
 ### 🎥 Video de demostración
 
-▶️ https://drive.google.com/file/d/1pw_crC4tPk6fZSQDKzxzNOxKIGbKgaq1/view?usp=sharing
+▶️ **[Ver video de demostración del proyecto](https://drive.google.com/file/d/1pw_crC4tPk6fZSQDKzxzNOxKIGbKgaq1/view?usp=sharing)**
 
 **Duración máxima requerida:** 10 minutos.
 
@@ -32,7 +32,9 @@ El video presenta:
 - riesgos, limitaciones y mejoras futuras.
 
 ### 👥 Integrantes
-*Solo los Mecionados participaron en el proyecto
+
+> Solo las personas mencionadas a continuación participaron en el desarrollo del proyecto.
+
 - Israel Onofre
 - Dolores Guevara
 
@@ -704,11 +706,9 @@ Consultar:
 
 [`docs/riesgos_mejoras.md`](docs/riesgos_mejoras.md)
 
-```
 
 ---
 
 ## 📄 Licencia y uso
 
 Proyecto académico desarrollado exclusivamente con fines educativos para el Semillero de Inteligencia Artificial. Los documentos, nombres y datos utilizados son ficticios.
-

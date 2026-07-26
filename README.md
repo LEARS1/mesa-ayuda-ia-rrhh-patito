@@ -445,6 +445,8 @@ PHOENIX_PROTOCOL=http/protobuf
 
 > El archivo `.env` contiene secretos y nunca debe subirse a GitHub.
 
+> Phoenix es opcional. Para ejecutar la aplicación sin observabilidad, establecer `PHOENIX_ENABLED=false`.
+
 ---
 
 ## 6. Ejecutar las pruebas
@@ -454,6 +456,7 @@ Con el entorno virtual activado:
 ```powershell
 python tests\verificacion_estatica.py
 python tests\verificacion_cambio_intencion.py
+python tests\verificacion_historial_solicitudes.py
 python tests\verificacion_phoenix.py
 ```
 
@@ -462,6 +465,7 @@ Resultados esperados:
 ```text
 OK: estructura y entregables mínimos presentes.
 OK: el cambio de intención funciona correctamente.
+OK: la consulta del historial funciona correctamente.
 OK: integración estática de Phoenix completa.
 ```
 
@@ -495,7 +499,7 @@ http://127.0.0.1:6006/v1/traces
 Abrir una segunda terminal:
 
 ```powershell
-cd C:\RUTA\AL\PROYECTO
+cd mesa-ayuda-ia-rrhh-patito
 .\venv\Scripts\Activate.ps1
 python -m uvicorn main:app --reload
 ```
@@ -606,6 +610,143 @@ Revisa este formulario e indica qué información está completa y qué datos fa
 ```
 
 Más casos están disponibles en [`docs/ejemplos_pruebas.md`](docs/ejemplos_pruebas.md).
+
+---
+
+## 11. Solución de problemas comunes
+
+### Uvicorn no está instalado
+
+Si aparece:
+
+```text
+No module named uvicorn
+```
+
+Ejecutar:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Comprobar:
+
+```powershell
+python -m pip show uvicorn
+```
+
+Si todavía no aparece instalado:
+
+```powershell
+python -m pip install uvicorn fastapi
+```
+
+---
+
+### Phoenix no muestra trazas
+
+Comprobar que `.env` contenga:
+
+```env
+PHOENIX_ENABLED=true
+PHOENIX_PROJECT_NAME=mesa-ayuda-rrhh-patito
+PHOENIX_COLLECTOR_ENDPOINT=http://127.0.0.1:6006/v1/traces
+PHOENIX_PROTOCOL=http/protobuf
+```
+
+La terminal de Phoenix debe recibir solicitudes similares a:
+
+```text
+POST /v1/traces HTTP/1.1 200 OK
+```
+
+Si aparecen solicitudes hacia `/` con código `405`, el endpoint de Phoenix está mal configurado.
+
+---
+
+### Ejecutar la aplicación sin Phoenix
+
+Phoenix es opcional para la ejecución principal. Para desactivarlo:
+
+```env
+PHOENIX_ENABLED=false
+```
+
+Después iniciar únicamente la aplicación:
+
+```powershell
+python -m uvicorn main:app --reload
+```
+
+---
+
+### Recrear el entorno virtual
+
+Si el entorno virtual presenta errores o faltan dependencias:
+
+```powershell
+deactivate
+Remove-Item venv -Recurse -Force
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+En Linux/macOS:
+
+```bash
+deactivate
+rm -rf venv
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+---
+
+### Verificar dependencias importantes
+
+```powershell
+python -m pip show fastapi
+python -m pip show uvicorn
+python -m pip show langchain
+python -m pip show langgraph
+python -m pip show chromadb
+python -m pip show langchain-google-genai
+python -m pip show arize-phoenix
+```
+
+---
+
+### La API key no funciona
+
+Comprobar que `.env` contenga una clave válida:
+
+```env
+GOOGLE_API_KEY=SU_CLAVE_REAL
+```
+
+No utilizar comillas, espacios adicionales ni subir esta clave a GitHub.
+
+---
+
+### Los índices Chroma generan errores
+
+Detener la aplicación y eliminar únicamente la carpeta local de índices:
+
+```powershell
+Remove-Item chroma_db -Recurse -Force
+```
+
+Después iniciar nuevamente:
+
+```powershell
+python -m uvicorn main:app --reload
+```
+
+Los índices se volverán a generar.
 
 ---
 
